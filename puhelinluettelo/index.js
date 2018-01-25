@@ -24,8 +24,10 @@ let persons = [
   }
 ];
 
-app.get('/', (req, res) => {
-  res.send('<h1>Persons API</h1>')
+let maara = persons.length
+
+app.get('/info', (req, res) => {
+  res.send('<p>puhelinluettelossa on ' + maara + ' henkilön tiedot</p><p>' + new Date() + '</p>')
 })
 
 app.get('/api/persons', (req, res) => {
