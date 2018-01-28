@@ -2,9 +2,10 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
+const cors = require("cors");
 
 app.use(bodyParser.json());
-
+app.use(cors());
 app.use(
   morgan(function(tokens, req, res) {
     return [
@@ -112,6 +113,20 @@ app.post("/api/persons", (req, res) => {
   persons = persons.concat(person);
 
   res.json(person);
+});
+
+app.put("/api/persons/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const person = persons.find(person => person.id === id);
+  if (person) {
+    const newPerson = { ...person, number: req.params.number };
+    persons = persons.filter(person => person.id !== id);
+    persons = persons.concat(newPerson);
+
+    res.json(persons);
+  } else {
+    res.status(404).end();
+  }
 });
 
 const PORT = 3001;
