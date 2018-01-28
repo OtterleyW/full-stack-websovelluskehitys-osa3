@@ -3,6 +3,10 @@ const app = express();
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const cors = require("cors");
+const mongoose = require('mongoose')
+
+const url = mongodb://otter:hurraamongo@ds117178.mlab.com:17178/fullstack-harjoitus
+
 
 app.use(bodyParser.json());
 app.use(express.static('build'))
