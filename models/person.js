@@ -18,7 +18,5 @@ Person.format = function(person) {
     id: person._id
   };
 };
-
 module.exports = Person;
 
-mongodb://otter:hurraamongo@ds117178.mlab.com:17178/fullstack-harjoitus
