@@ -52,14 +52,14 @@ app.get("/api/persons", (req, res) => {
 app.get("/api/persons/:id", (req, res) => {
   Person.findById(req.params.id)
     .then(person => {
-      if (note) {
+      if (person) {
         res.json(Person.format(person)).catch;
       } else {
-        response.status(404).end();
+        res.status(404).end();
       }
     })
     .catch(error => {
-      response.status(400).send({ error: "malformatted id" });
+      res.status(400).send({ error: "malformatted id" });
     });
 });
 
@@ -69,7 +69,7 @@ app.delete("/api/persons/:id", (req, res) => {
       res.status(204).end();
     })
     .catch(error => {
-      response.status(400).send({ error: "malformatted id" });
+      res.status(400).send({ error: "malformatted id" });
     });
 });
 
@@ -80,19 +80,26 @@ app.post("/api/persons", (req, res) => {
     return res.status(400).json({ error: "name missing" });
   }
 
-  const person = new Person({
-    name: body.name,
-    number: body.number
-  });
+  Person.find({ name: body.name }).then(result => {
+    console.log(result)
+    if (result.length !== 0) {
+      res.status(400).json({ erros: "person already exists" });
+    } else {
+      const person = new Person({
+        name: body.name,
+        number: body.number
+      });
 
-  person
-    .save()
-    .then(savedPerson => {
-      res.json(Person.format(savedPerson));
-    })
-    .catch(error => {
-      console.log(error);
-    });
+      person
+        .save()
+        .then(savedPerson => {
+          res.json(Person.format(savedPerson));
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
+  });
 });
 
 app.put("/api/persons/:id", (req, res) => {
@@ -103,8 +110,7 @@ app.put("/api/persons/:id", (req, res) => {
     number: body.number
   };
 
-  Person
-    .findByIdAndUpdate(req.params.id, person, { new: true })
+  Person.findByIdAndUpdate(req.params.id, person, { new: true })
     .then(updatedperson => {
       res.json(Person.format(updatedperson));
     })
