@@ -27,20 +27,41 @@ morgan.token("body", function(req, res) {
   return JSON.stringify(req.body);
 });
 
+app.get("/info", (req, res) => {
+Person.find({}).then(persons => {
+  res.send(
+    "<p>puhelinluettelossa on " +
+      persons.map(Person.format).length +
+      " henkilön tiedot</p><p>" +
+      new Date() +
+      "</p>"
+  )}
+)})
+
 app.get("/api/persons", (req, res) => {
-  Person.find({}).then(persons => {
-    res.json(persons.map(Person.format));
-  });
+  Person.find({})
+    .then(persons => {
+      res.json(persons.map(Person.format));
+    })
+    .catch(error => {
+      console.log(error);
+    });
 });
 
 app.get("/api/persons/:id", (req, res) => {
   Person.findById(req.params.id).then(person => {
-    res.json(Person.format(person));
+    res.json(Person.format(person)).catch(error => {
+      console.log(error);
+    });
   });
 });
 
 app.delete("/api/persons/:id", (req, res) => {
-  Person.findByIdAndRemove(req.params.id).then(person => res.json(person));
+  Person.findByIdAndRemove(req.params.id)
+    .then(person => res.json(person))
+    .catch(error => {
+      console.log(error);
+    });
 });
 
 app.post("/api/persons", (req, res) => {
@@ -55,19 +76,28 @@ app.post("/api/persons", (req, res) => {
     number: body.number
   });
 
-  person.save().then(savedPerson => {
-    res.json(Person.format(savedPerson));
-  });
+  person
+    .save()
+    .then(savedPerson => {
+      res.json(Person.format(savedPerson));
+    })
+    .catch(error => {
+      console.log(error);
+    });
 });
 
 app.put("/api/persons/:id", (req, res) => {
-  Person.findById(req.params.id).then(person => {
-    person.number = req.body.number;
+  Person.findById(req.params.id)
+    .then(person => {
+      person.number = req.body.number;
 
-    person.save().then(savedPerson => {
-      res.json(Person.format(savedPerson));
+      person.save().then(savedPerson => {
+        res.json(Person.format(savedPerson));
+      });
+    })
+    .catch(error => {
+      console.log(error);
     });
-  });
 });
 
 const PORT = process.env.PORT || 3001;
