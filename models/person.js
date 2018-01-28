@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
-const url =
-  "mongodb://otter:hurraamongo@ds117178.mlab.com:17178/fullstack-harjoitus";
+const url = process.env.MONGODB_URI
 
 mongoose.connect(url);
 mongoose.Promise = global.Promise;
@@ -21,3 +20,5 @@ Person.format = function(person) {
 };
 
 module.exports = Person;
+
+mongodb://otter:hurraamongo@ds117178.mlab.com:17178/fullstack-harjoitus
