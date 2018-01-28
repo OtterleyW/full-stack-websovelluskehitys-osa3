@@ -1,8 +1,10 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const morgan = require("morgan");
 
 app.use(bodyParser.json());
+app.use(morgan("tiny"));
 
 let persons = [
   {
@@ -65,7 +67,7 @@ const generateId = () => {
 };
 
 const checkName = name => {
- let nameFound = persons.find(person => {
+  let nameFound = persons.find(person => {
     return person.name === name;
   });
 
@@ -80,7 +82,6 @@ app.post("/api/persons", (req, res) => {
   }
 
   if (checkName(body.name)) {
-
     return res.status(400).json({ error: "name must be unique" });
   }
 
