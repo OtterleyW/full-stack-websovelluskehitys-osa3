@@ -3,13 +3,10 @@ const app = express();
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const cors = require("cors");
-const mongoose = require('mongoose')
-
-const url = mongodb://otter:hurraamongo@ds117178.mlab.com:17178/fullstack-harjoitus
-
+const Person = require("./models/person");
 
 app.use(bodyParser.json());
-app.use(express.static('build'))
+app.use(express.static("build"));
 app.use(cors());
 app.use(
   morgan(function(tokens, req, res) {
@@ -30,108 +27,47 @@ morgan.token("body", function(req, res) {
   return JSON.stringify(req.body);
 });
 
-let persons = [
-  {
-    name: "Arto Hellas",
-    number: "040-123456",
-    id: 1
-  },
-  {
-    name: "Martti Tienari",
-    number: "040-123456",
-    id: 2
-  },
-  {
-    name: "Arto Järvinen",
-    number: "040-123456",
-    id: 3
-  },
-  {
-    name: "Lea Kutvonen",
-    number: "040-123456",
-    id: 4
-  }
-];
-
-let maara = persons.length;
-
-app.get("/info", (req, res) => {
-  res.send(
-    "<p>puhelinluettelossa on " +
-      maara +
-      " henkilön tiedot</p><p>" +
-      new Date() +
-      "</p>"
-  );
-});
-
 app.get("/api/persons", (req, res) => {
-  res.json(persons);
+  Person.find({}).then(persons => {
+    res.json(persons.map(Person.format));
+  });
 });
 
 app.get("/api/persons/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const person = persons.find(person => person.id === id);
-  if (person) {
-    res.json(person);
-  } else {
-    res.status(404).end();
-  }
+  Person.findById(req.params.id).then(person => {
+    res.json(Person.format(person));
+  });
 });
 
 app.delete("/api/persons/:id", (req, res) => {
-  const id = Number(req.params.id);
-  persons = persons.filter(person => person.id !== id);
-
-  res.status(204).end();
+  Person.findByIdAndRemove(req.params.id).then(person => res.json(person));
 });
-
-const generateId = () => {
-  return Math.floor(Math.random() * Math.floor(99999));
-};
-
-const checkName = name => {
-  let nameFound = persons.find(person => {
-    return person.name === name;
-  });
-
-  return nameFound;
-};
 
 app.post("/api/persons", (req, res) => {
   const body = req.body;
-
-  if (body.name === undefined || body.number === undefined) {
-    return res.status(400).json({ error: "name or number missing" });
+  console.log(body);
+  if (body.name === undefined) {
+    return res.status(400).json({ error: "name missing" });
   }
 
-  if (checkName(body.name)) {
-    return res.status(400).json({ error: "name must be unique" });
-  }
-
-  const person = {
+  const person = new Person({
     name: body.name,
-    number: body.number,
-    id: generateId()
-  };
+    number: body.number
+  });
 
-  persons = persons.concat(person);
-
-  res.json(person);
+  person.save().then(savedPerson => {
+    res.json(Person.format(savedPerson));
+  });
 });
 
 app.put("/api/persons/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const person = persons.find(person => person.id === id);
-  if (person) {
-    const newPerson = { ...person, number: req.params.number };
-    persons = persons.filter(person => person.id !== id);
-    persons = persons.concat(newPerson);
+  Person.findById(req.params.id).then(person => {
+    person.number = req.body.number;
 
-    res.json(persons);
-  } else {
-    res.status(404).end();
-  }
+    person.save().then(savedPerson => {
+      res.json(Person.format(savedPerson));
+    });
+  });
 });
 
 const PORT = process.env.PORT || 3001;
