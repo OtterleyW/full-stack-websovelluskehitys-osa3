@@ -28,15 +28,16 @@ morgan.token("body", function(req, res) {
 });
 
 app.get("/info", (req, res) => {
-Person.find({}).then(persons => {
-  res.send(
-    "<p>puhelinluettelossa on " +
-      persons.map(Person.format).length +
-      " henkilön tiedot</p><p>" +
-      new Date() +
-      "</p>"
-  )}
-)})
+  Person.find({}).then(persons => {
+    res.send(
+      "<p>puhelinluettelossa on " +
+        persons.map(Person.format).length +
+        " henkilön tiedot</p><p>" +
+        new Date() +
+        "</p>"
+    );
+  });
+});
 
 app.get("/api/persons", (req, res) => {
   Person.find({})
@@ -49,24 +50,32 @@ app.get("/api/persons", (req, res) => {
 });
 
 app.get("/api/persons/:id", (req, res) => {
-  Person.findById(req.params.id).then(person => {
-    res.json(Person.format(person)).catch(error => {
-      console.log(error);
+  Person.findById(req.params.id)
+    .then(person => {
+      if (note) {
+        res.json(Person.format(person)).catch;
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch(error => {
+      response.status(400).send({ error: "malformatted id" });
     });
-  });
 });
 
 app.delete("/api/persons/:id", (req, res) => {
   Person.findByIdAndRemove(req.params.id)
-    .then(person => res.json(person))
+    .then(result => {
+      res.status(204).end();
+    })
     .catch(error => {
-      console.log(error);
+      response.status(400).send({ error: "malformatted id" });
     });
 });
 
 app.post("/api/persons", (req, res) => {
   const body = req.body;
-  console.log(body);
+
   if (body.name === undefined) {
     return res.status(400).json({ error: "name missing" });
   }
@@ -87,16 +96,21 @@ app.post("/api/persons", (req, res) => {
 });
 
 app.put("/api/persons/:id", (req, res) => {
-  Person.findById(req.params.id)
-    .then(person => {
-      person.number = req.body.number;
+  const body = req.body;
 
-      person.save().then(savedPerson => {
-        res.json(Person.format(savedPerson));
-      });
+  const person = {
+    name: body.name,
+    number: body.number
+  };
+
+  Person
+    .findByIdAndUpdate(req.params.id, person, { new: true })
+    .then(updatedperson => {
+      res.json(Person.format(updatedperson));
     })
     .catch(error => {
       console.log(error);
+      res.status(400).send({ error: "malformatted id" });
     });
 });
 
